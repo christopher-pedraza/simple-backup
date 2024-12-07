@@ -27,7 +27,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: SimpleBackup
-          path: home/runner/work/simple-backup/simple-backup/dist/simple_backup/simple_backup.exe
+          path: /home/runner/work/simple-backup/simple-backup/dist/simple_backup/simple_backup.exe
 
       - name: create release
         id: create_release
@@ -50,7 +50,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{steps.create_release.outputs.upload_url}}
-          asset_path: home/runner/work/simple-backup/simple-backup/dist/simple_backup/simple_backup.exe
+          asset_path: /home/runner/work/simple-backup/simple-backup/dist/simple_backup/simple_backup.exe
           asset_name: SimpleBackup.exe
           asset_content_type: application/zip
 
