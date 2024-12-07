@@ -2,7 +2,10 @@ name: Build Workflow
 
 on:
   push:
-#    branches: master
+    branches: [main]
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -29,14 +32,32 @@ jobs:
           name: SimpleBackup
           path: dist/simple_backup
 
-      - name: create release
+      - name: Get Latest Tag
+        id: get_tag
+        run: |
+          git fetch --tags
+          TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "v1.0.0")
+          echo "LATEST_TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Increment Tag
+        id: increment_tag
+        run: |
+          TAG=${LATEST_TAG:-v1.0.0}
+          IFS='.' read -ra PARTS <<< "${TAG#v}"
+          MAJOR=${PARTS[0]}
+          MINOR=${PARTS[1]}
+          PATCH=${PARTS[2]}
+          NEW_TAG="v$MAJOR.$MINOR.$((PATCH+1))"
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+
+      - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: '1.0'
-          release_name: 'Newest release'
+          tag_name: ${{ env.NEW_TAG }}
+          release_name: Release ${{ env.NEW_TAG }}
           body: |
             Newest release!
           draft: false
