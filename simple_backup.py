@@ -49,11 +49,13 @@ def list_sources(sources):
     print("Available sources to backup:")
     for idx, (name, path) in enumerate(sources.items(), start=1):
         print(f"{idx}. {name} ({path})")
+    print(f"{len(sources) + 1}. ALL")
 
 def list_destinations(destinations):
-    print("Available destinations for backup:")
+    print("\nAvailable destinations for backup:")
     for idx, (name, path) in enumerate(destinations.items(), start=1):
         print(f"{idx}. {name} ({path})")
+    print(f"{len(destinations) + 1}. ALL")
 
 def select_source(sources, always_backup_all_sources):
     if always_backup_all_sources:
@@ -63,6 +65,8 @@ def select_source(sources, always_backup_all_sources):
             choice = int(input("Select a source to backup (number): "))
             if 1 <= choice <= len(sources):
                 return [list(sources.items())[choice - 1]]
+            elif choice == len(sources) + 1:
+                return sources.items()
             else:
                 print("Invalid choice. Please select a valid number.")
         except ValueError:
@@ -76,6 +80,8 @@ def select_destination(destinations, always_backup_to_all_destinations):
             choice = int(input("Select a destination for backup (number): "))
             if 1 <= choice <= len(destinations):
                 return [list(destinations.items())[choice - 1]]
+            elif choice == len(destinations) + 1:
+                return destinations.items()
             else:
                 print("Invalid choice. Please select a valid number.")
         except ValueError:
@@ -96,12 +102,15 @@ def main():
     always_backup_all_sources = config['backup'].getboolean('ALWAYS_BACKUP_ALL_SOURCES')
     always_backup_to_all_destinations = config['backup'].getboolean('ALWAYS_BACKUP_TO_ALL_DESTINATIONS')
     
-    list_sources(sources)
+    if not always_backup_all_sources:
+        list_sources(sources)
     selected_sources = select_source(sources, always_backup_all_sources)
     
-    list_destinations(destinations)
+    if not always_backup_to_all_destinations:
+        list_destinations(destinations)
     selected_destinations = select_destination(destinations, always_backup_to_all_destinations)
     
+    print("\nStarting backup process...")
     for source_name, source_path in selected_sources:
         for destination_name, backup_destination in selected_destinations:
             backup_source(source_name, source_path, backup_destination, destination_name)
