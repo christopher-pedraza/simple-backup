@@ -27,17 +27,12 @@ jobs:
         run: |
           python -m PyInstaller src/simple_backup.spec
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: SimpleBackup
-          path: dist/simple_backup.exe
-
       - name: Get Latest Tag
         id: get_tag
         run: |
           git fetch --tags
-          $tag = (git describe --tags $(git rev-list --tags --max-count=1) 2>$null)
-          if (-not $tag) { $tag = "v1.0.0" }
+          $tags = git tag --list
+          if (-not $tags) { $tag = "v1.0.0" } else { $tag = ($tags | Sort-Object -Descending)[0] }
           echo "LATEST_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Increment Tag
@@ -60,7 +55,7 @@ jobs:
           tag_name: ${{ env.NEW_TAG }}
           release_name: Release ${{ env.NEW_TAG }}
           body: |
-            Newest release!
+            Newest release: **${{ env.NEW_TAG }}**
           draft: false
           prerelease: false
           
