@@ -26,7 +26,8 @@ jobs:
 
       - name: List files for debugging
         run: |
-          ls -R dist/simple_backup
+          ls -R
+          ls -R .dist
 
       - uses: actions/upload-artifact@v4
         with:
