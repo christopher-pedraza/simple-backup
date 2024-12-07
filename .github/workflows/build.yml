@@ -1,0 +1,66 @@
+name: Build Workflow
+
+on:
+  push:
+#    branches: master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          
+      - name: Install requirements
+        run: |
+          pip install -r requirements.txt
+          
+      - name: Run PyInstaller
+        run: |
+          python -m PyInstaller simple_backup.spec
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SimpleBackup
+          path: dist/simple_backup.exe
+
+      - name: create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.head_commit.message }}
+          release_name: ${{ github.event.head_commit.message }}
+          overwrite: true
+          body: |
+            Newest release!
+          draft: false
+          prerelease: false
+          
+      - name: Upload Release Asset - EXE
+        id: upload-release-asset-exe
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_path: dist/simple_backup.exe
+          asset_name: SimpleBackup.exe
+          asset_content_type: application/zip
+
+      - name: Upload Release Asset - setup.conf
+        id: upload-release-asset-conf
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_path: setup.conf
+          asset_name: setup.conf
+          asset_content_type: application/octet-stream
